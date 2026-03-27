@@ -17,7 +17,7 @@ type Props = {
 
 export function Bubble({ updateThrottleMs = 200 }: Props) {
   const [visible, setVisible] = useState(false);
-  const [logs, setLogs] = useState<DevLoggerLog[]>(() => getAllLogs());
+  const [logs, setLogs] = useState<DevLoggerLog[]>([]);
   const [count, setCount] = useState(() => size());
 
   const throttledTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -26,12 +26,16 @@ export function Bubble({ updateThrottleMs = 200 }: Props) {
     return subscribe(() => {
       if (throttledTimer.current) clearTimeout(throttledTimer.current);
       throttledTimer.current = setTimeout(() => {
-        setLogs(getAllLogs());
         setCount(size());
         throttledTimer.current = null;
       }, updateThrottleMs);
     });
   }, [updateThrottleMs]);
+
+  useEffect(() => {
+    if (!visible) return;
+    setLogs(getAllLogs());
+  }, [visible, count]);
 
   const pan = useRef(new Animated.ValueXY({ x: 16, y: 120 })).current;
   const last = useRef({ x: 16, y: 120 });

@@ -59,6 +59,19 @@ export interface DevLoggerConfig {
   maxBodyBytes: number;
   maxHeaders: number;
 
+  /**
+   * Redact sensitive headers by name (case-insensitive).
+   */
+  redactHeaders: string[];
+  /**
+   * Redact sensitive query params by key name (case-insensitive).
+   */
+  redactQueryParams: string[];
+  /**
+   * Redact body/message content using patterns.
+   */
+  redactBodyPatterns: RegExp[];
+
   interceptFetch: boolean;
   interceptXhr: boolean;
   interceptAxios: boolean;

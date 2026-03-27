@@ -1,6 +1,7 @@
 import { getConfig } from './config';
 import type { DevLoggerLog, StoreListener } from './types';
 import { normalizeHeaderRecord, truncateByBytes } from './utils';
+import { redactHeaders, redactText, redactUrlQuery } from './sanitize';
 
 const listeners = new Set<StoreListener>();
 
@@ -8,6 +9,7 @@ let maxLogs = getConfig().maxLogs;
 let buffer: Array<DevLoggerLog | undefined> = new Array(maxLogs);
 let cursor = 0;
 let count = 0;
+let version = 0;
 
 function ensureCapacity(): void {
   const desiredMaxLogs = getConfig().maxLogs;
@@ -25,6 +27,7 @@ function ensureCapacity(): void {
 }
 
 function notifyListeners(): void {
+  version += 1;
   for (const l of listeners) l();
 }
 
@@ -37,23 +40,38 @@ function addNormalized(log: DevLoggerLog, shouldNotify: boolean): void {
     ...log,
     request: {
       ...log.request,
+      url: redactUrlQuery(log.request.url, config.redactQueryParams),
       headers: config.captureRequestHeaders
-        ? normalizeHeaderRecord(log.request.headers, config.maxHeaders)
+        ? redactHeaders(
+            normalizeHeaderRecord(log.request.headers, config.maxHeaders),
+            config.redactHeaders
+          )
         : undefined,
       body:
         config.captureRequestBody && typeof log.request.body === 'string'
-          ? truncateByBytes(log.request.body, config.maxBodyBytes)
+          ? truncateByBytes(
+              redactText(log.request.body, config.redactBodyPatterns) ??
+                log.request.body,
+              config.maxBodyBytes
+            )
           : undefined,
     },
     response: log.response
       ? {
           status: log.response.status,
           headers: config.captureResponseHeaders
-            ? normalizeHeaderRecord(log.response.headers, config.maxHeaders)
+            ? redactHeaders(
+                normalizeHeaderRecord(log.response.headers, config.maxHeaders),
+                config.redactHeaders
+              )
             : undefined,
           body:
             config.captureResponseBody && typeof log.response.body === 'string'
-              ? truncateByBytes(log.response.body, config.maxBodyBytes)
+              ? truncateByBytes(
+                  redactText(log.response.body, config.redactBodyPatterns) ??
+                    log.response.body,
+                  config.maxBodyBytes
+                )
               : undefined,
         }
       : undefined,
@@ -86,6 +104,10 @@ export function getAllLogs(): DevLoggerLog[] {
 
 export function size(): number {
   return count;
+}
+
+export function getVersion(): number {
+  return version;
 }
 
 export function clear(): void {

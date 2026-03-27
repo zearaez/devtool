@@ -1,36 +1,27 @@
 # @zearaez/devtool
 
-A react native plugin for network logs
+Development-only React Native network + console logger with a floating bubble UI.
 
 ## Installation
-
 
 ```sh
 npm install @zearaez/devtool
 ```
-
-
-## Usage
-
-
-```js
-import { DevLogger } from '@zearaez/devtool';
+OR
+```sh
+yarn add @zearaez/devtool
 ```
 
-## DevLogger (network monitoring, dev only)
+## Basic setup
+
+`DevLogger` auto-initializes in React Native `__DEV__` builds and patches `fetch`/`XMLHttpRequest` (and console logging). In production builds it’s a no-op.
+
+### 1) Mount the UI
 
 ```tsx
 import { DevLogger } from '@zearaez/devtool';
 
 export default function App() {
-  // Optional: customize bounds / persistence / axios patching in dev.
-  // DevLogger is dev-guarded, so this is safe to call unconditionally.
-  DevLogger.init({
-    maxLogs: 200,
-    maxBodyBytes: 20_000,
-    interceptAxios: false,
-  });
-
   return (
     <>
       {/* ... */}
@@ -40,14 +31,78 @@ export default function App() {
 }
 ```
 
-`DevLogger` auto-initializes and monkey-patches `fetch`/`XMLHttpRequest` in React Native `__DEV__` builds.
+### 2) Configure (optional)
 
-Key options:
-- `maxLogs`: bounded number of captured network calls (ring-buffer).
-- `maxBodyBytes`: maximum request/response body bytes stored (truncates).
-- `interceptAxios` + `axios`: optional Axios interception (only when explicitly enabled).
-- `persistence`: optional persistence adapter (dev-only) if you want to reload logs after reloads.
+Call `DevLogger.init(options?)` to override defaults (safe to call unconditionally).
 
+```ts
+import { DevLogger } from '@zearaez/devtool';
+
+DevLogger.init({
+  maxLogs: 200,
+  maxBodyBytes: 20_000,
+
+  // Optional: enable Axios interception
+  // interceptAxios: true,
+  // axios,
+});
+```
+
+---
+
+## Configuration reference
+
+### Defaults
+
+- **Limits**
+  - `maxLogs`: `200`
+  - `maxBodyBytes`: `20000`
+  - `maxHeaders`: `50`
+- **Interceptors**
+  - `interceptFetch`: `true`
+  - `interceptXhr`: `true`
+  - `interceptAxios`: `false` (if `true`, also provide `axios`)
+- **Capture**
+  - `captureRequestHeaders`: `true`
+  - `captureResponseHeaders`: `true`
+  - `captureRequestBody`: `true`
+  - `captureResponseBody`: `true`
+- **Redaction (recommended)**
+  - `redactHeaders`: `['authorization','cookie','set-cookie','x-api-key']`
+  - `redactQueryParams`: `['access_token','token','auth','api_key','apikey']`
+  - `redactBodyPatterns`: `[]`
+- **Persistence (optional)**
+  - `persistence`: `undefined`
+  - `persistenceDebounceMs`: `500`
+
+### Common recipes
+
+#### Disable redaction (allow everything)
+
+```ts
+DevLogger.init({
+  redactHeaders: [],
+  redactQueryParams: [],
+  redactBodyPatterns: [],
+});
+```
+
+#### Reduce captured data (safer)
+
+```ts
+DevLogger.init({
+  captureRequestHeaders: false,
+  captureResponseHeaders: false,
+  captureRequestBody: false,
+  captureResponseBody: false,
+});
+```
+
+---
+
+## Security note
+
+Even in dev, logs can include sensitive data (tokens/cookies/PII). Keep redaction enabled and disable body/header capture when needed—especially if you enable persistence.
 
 ## Contributing
 

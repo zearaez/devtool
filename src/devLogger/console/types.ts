@@ -4,6 +4,7 @@ export type ConsoleLogEntry = {
   id: string;
   level: ConsoleLevel;
   time: number;
+  timeText?: string;
   message: string;
   stack?: string;
 };

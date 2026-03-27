@@ -10,6 +10,19 @@ function nextId(): string {
   return `devlogger_console_${Date.now()}_${seq}`;
 }
 
+function timeTextMs(ms: number): string {
+  try {
+    const d = new Date(ms);
+    // Fast, predictable HH:MM:SS.
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    const ss = String(d.getSeconds()).padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
+  } catch {
+    return '';
+  }
+}
+
 function safeToString(value: unknown): string {
   if (typeof value === 'string') return value;
   if (value instanceof Error) {
@@ -67,10 +80,12 @@ export function patchConsole(): void {
     (level: ConsoleLevel) =>
     (...args: unknown[]) => {
       try {
+        const time = Date.now();
         addConsoleLog({
           id: nextId(),
           level,
-          time: Date.now(),
+          time,
+          timeText: timeTextMs(time),
           message: joinArgs(args),
           stack: maybeStack(level, args),
         });

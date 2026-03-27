@@ -1,25 +1,24 @@
 {
   "name": "@zearaez/devtool",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A react native plugin for network logs",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
     ".": {
-      "source": "./src/index.tsx",
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
     "./package.json": "./package.json"
   },
   "files": [
-    "src",
     "lib",
     "android",
     "ios",
     "cpp",
     "*.podspec",
     "react-native.config.js",
+    "!lib/**/*.map",
     "!ios/build",
     "!android/build",
     "!android/gradle",

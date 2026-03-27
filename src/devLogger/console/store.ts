@@ -1,6 +1,7 @@
 import { getConfig } from '../config';
 import type { ConsoleLogEntry, ConsoleStoreListener } from './types';
 import { truncateByBytes } from '../utils';
+import { redactText } from '../sanitize';
 
 const listeners = new Set<ConsoleStoreListener>();
 
@@ -36,9 +37,15 @@ export function addConsoleLog(
 
   const normalized: ConsoleLogEntry = {
     ...entry,
-    message: truncateByBytes(entry.message, config.maxBodyBytes),
+    message: truncateByBytes(
+      redactText(entry.message, config.redactBodyPatterns) ?? entry.message,
+      config.maxBodyBytes
+    ),
     stack: entry.stack
-      ? truncateByBytes(entry.stack, config.maxBodyBytes)
+      ? truncateByBytes(
+          redactText(entry.stack, config.redactBodyPatterns) ?? entry.stack,
+          config.maxBodyBytes
+        )
       : undefined,
   };
 

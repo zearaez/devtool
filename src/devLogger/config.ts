@@ -5,6 +5,10 @@ const defaultConfig: DevLoggerConfig = {
   maxBodyBytes: 20_000,
   maxHeaders: 50,
 
+  redactHeaders: ['authorization', 'cookie', 'set-cookie', 'x-api-key'],
+  redactQueryParams: ['access_token', 'token', 'auth', 'api_key', 'apikey'],
+  redactBodyPatterns: [],
+
   interceptFetch: true,
   interceptXhr: true,
   interceptAxios: false,

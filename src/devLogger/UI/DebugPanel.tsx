@@ -710,7 +710,7 @@ export function DebugPanel({ visible, logs, onClose, onClear }: Props) {
                           {item.level.toUpperCase()}
                         </Text>
                         <Text style={styles.consoleTimeText}>
-                          {new Date(item.time).toLocaleTimeString()}
+                          {item.timeText ?? ''}
                         </Text>
                         <Pressable
                           onPress={() => clipboard.setString(item.message)}
