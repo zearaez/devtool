@@ -1,6 +1,7 @@
 import { patchFetch } from './interceptors/fetch';
 import { patchXMLHttpRequest } from './interceptors/xhr';
 import { patchAxios } from './interceptors/axios';
+import { patchConsole } from './console/intercept';
 import { getConfig, setConfig } from './config';
 import { addLog, clear, getAllLogs, subscribe } from './store';
 import type { PartialDevLoggerConfig } from './types';
@@ -56,6 +57,7 @@ export function init(options?: PartialDevLoggerConfig): void {
   if (config.interceptFetch) patchFetch();
   if (config.interceptXhr) patchXMLHttpRequest();
   if (config.interceptAxios && config.axios) patchAxios(config.axios);
+  patchConsole();
 
   // Persistence setup is also idempotent.
   setupPersistence();
